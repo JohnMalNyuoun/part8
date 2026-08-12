@@ -29,12 +29,15 @@ const Authors = (props) => {
 
   const authors = result.data.allAuthors
 
+  // Automatically default the select value to the first author if non-selected
+  const selectedName = name || (authors.length > 0 ? authors[0].name : '')
+
   const submit = async (event) => {
     event.preventDefault()
 
     changeBorn({
       variables: {
-        name,
+        name: selectedName,
         setBornTo: parseInt(born, 10)
       }
     })
@@ -66,11 +69,13 @@ const Authors = (props) => {
       <h3>Set birthyear</h3>
       <form onSubmit={submit}>
         <div>
-          name
-          <input
-            value={name}
-            onChange={({ target }) => setName(target.value)}
-          />
+          <select value={selectedName} onChange={({ target }) => setName(target.value)}>
+            {authors.map((a) => (
+              <option key={a.id || a.name} value={a.name}>
+                {a.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           born
