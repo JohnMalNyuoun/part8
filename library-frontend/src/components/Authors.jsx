@@ -1,15 +1,47 @@
-import { useQuery } from "@apollo/client/react";
-import { ALL_DATA } from "../queries";
+import { useState } from 'react'
+import { useQuery, useMutation } from '@apollo/client/react'
+import { ALL_AUTHORS, EDIT_BIRTH_YEAR } from '../queries'
 
 const Authors = (props) => {
-  const result = useQuery(ALL_DATA);
+  const [name, setName] = useState('')
+  const [born, setBorn] = useState('')
 
-  if (!props.show) return null;
-  if (result.loading) return <div>loading...</div>;
-  if (result.error)
-    return <div>Error loading data: {result.error.message}</div>;
+  const result = useQuery(ALL_AUTHORS)
 
-  const authors = result.data.allAuthors;
+  const [ changeBorn ] = useMutation(EDIT_BIRTH_YEAR, {
+    refetchQueries: [ { query: ALL_AUTHORS } ],
+    onError: (error) => {
+      console.error(error.graphQLErrors[0]?.message || 'Error updating birth year')
+    }
+  })
+
+  if (!props.show) {
+    return null
+  }
+
+  if (result.loading) {
+    return <div>loading...</div>
+  }
+
+  if (result.error) {
+    return <div>Error loading data: {result.error.message}</div>
+  }
+
+  const authors = result.data.allAuthors
+
+  const submit = async (event) => {
+    event.preventDefault()
+
+    changeBorn({
+      variables: {
+        name,
+        setBornTo: parseInt(born, 10)
+      }
+    })
+
+    setName('')
+    setBorn('')
+  }
 
   return (
     <div>
@@ -30,8 +62,28 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-    </div>
-  );
-};
 
-export default Authors;
+      <h3>Set birthyear</h3>
+      <form onSubmit={submit}>
+        <div>
+          name
+          <input
+            value={name}
+            onChange={({ target }) => setName(target.value)}
+          />
+        </div>
+        <div>
+          born
+          <input
+            type="number"
+            value={born}
+            onChange={({ target }) => setBorn(target.value)}
+          />
+        </div>
+        <button type="submit">update author</button>
+      </form>
+    </div>
+  )
+}
+
+export default Authors
