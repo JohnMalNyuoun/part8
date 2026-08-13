@@ -1,5 +1,6 @@
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
+const { GraphQLError } = require('graphql') 
 const mongoose = require('mongoose')
 require('dotenv').config()
 
@@ -60,18 +61,13 @@ const resolvers = {
   Query: {
     bookCount: async () => Book.collection.countDocuments(),
     authorCount: async () => Author.collection.countDocuments(),
-    
-    // 1. Updated allBooks query with genre filtering
     allBooks: async (root, args) => {
       let filter = {}
-
       if (args.genre) {
         filter.genres = { $in: [args.genre] }
       }
-
       return Book.find(filter).populate('author')
     },
-    
     allAuthors: async () => Author.find({}),
   },
 
@@ -85,11 +81,23 @@ const resolvers = {
     addBook: async (root, args) => {
       let author = await Author.findOne({ name: args.author })
 
+      // Try creating author if they don't exist
       if (!author) {
         author = new Author({ name: args.author })
-        await author.save()
+        try {
+          await author.save()
+        } catch (error) {
+          throw new GraphQLError(`Saving author failed: ${error.message}`, {
+            extensions: {
+              code: 'BAD_USER_INPUT',
+              invalidArgs: args.author,
+              error,
+            },
+          })
+        }
       }
 
+      // Try creating and saving the book
       const book = new Book({
         title: args.title,
         published: args.published,
@@ -97,20 +105,41 @@ const resolvers = {
         author: author._id,
       })
 
-      await book.save()
+      try {
+        await book.save()
+      } catch (error) {
+        throw new GraphQLError(`Saving book failed: ${error.message}`, {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.title,
+            error,
+          },
+        })
+      }
+
       return book.populate('author')
     },
 
-    // 2. Implemented editAuthor mutation
     editAuthor: async (root, args) => {
       const author = await Author.findOne({ name: args.name })
-      
+
       if (!author) {
         return null
       }
 
       author.born = args.setBornTo
-      await author.save()
+
+      try {
+        await author.save()
+      } catch (error) {
+        throw new GraphQLError(`Updating birth year failed: ${error.message}`, {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            invalidArgs: args.setBornTo,
+            error,
+          },
+        })
+      }
 
       return author
     },
