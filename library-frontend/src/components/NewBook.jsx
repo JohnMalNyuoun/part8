@@ -34,7 +34,7 @@ const NewBook = (props) => {
       } 
     })
 
-    // Reset local form state
+  
     setTitle('')
     setPublished('')
     setAuthor('')

@@ -29,7 +29,7 @@ const Authors = (props) => {
 
   const authors = result.data.allAuthors
 
-  // Automatically default the select value to the first author if non-selected
+
   const selectedName = name || (authors.length > 0 ? authors[0].name : '')
 
   const submit = async (event) => {
