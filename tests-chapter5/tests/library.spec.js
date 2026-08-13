@@ -9,17 +9,19 @@ describe('Library app', () => {
 
   test('front page shows authors by default', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'authors' })).toBeVisible()
-    await expect(page.getByText('Robert Martin')).toBeVisible()
-    await expect(page.getByText('Martin Fowler')).toBeVisible()
-    await expect(page.getByText('Fyodor Dostoevsky')).toBeVisible()
+    
+    // Targeted using cell roles to prevent matching select option elements
+    await expect(page.getByRole('cell', { name: 'Robert Martin', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Martin Fowler', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Fyodor Dostoevsky', exact: true })).toBeVisible()
   })
 
   test('books page shows all books', async ({ page }) => {
     await page.getByRole('button', { name: 'books' }).click()
     await expect(page.getByRole('heading', { name: 'books' })).toBeVisible()
-    await expect(page.getByText('Clean Code')).toBeVisible()
-    await expect(page.getByText('Crime and punishment')).toBeVisible()
-    await expect(page.getByText('Refactoring, edition 2')).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Clean Code', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Crime and punishment', exact: true })).toBeVisible()
+    await expect(page.getByRole('cell', { name: 'Refactoring, edition 2', exact: true })).toBeVisible()
   })
 
   describe('Login', () => {
@@ -92,8 +94,8 @@ describe('Library app', () => {
       })
 
       await page.getByRole('button', { name: 'books' }).click()
-      await expect(page.getByText('Test Book')).toBeVisible()
-      await expect(page.getByText('Test Author')).toBeVisible()
+      await expect(page.getByRole('cell', { name: 'Test Book', exact: true })).toBeVisible()
+      await expect(page.getByRole('cell', { name: 'Test Author', exact: true })).toBeVisible()
     })
 
     test('author birth year can be updated', async ({ page }) => {
@@ -130,20 +132,20 @@ describe('Library app', () => {
         await page.getByRole('button', { name: 'refactoring' }).click()
 
         await expect(page.getByText('in genre')).toBeVisible()
-        await expect(page.getByText('Clean Code')).toBeVisible()
-        await expect(page.getByText('Refactoring, edition 2')).toBeVisible()
-        await expect(page.getByText('Refactoring to patterns')).toBeVisible()
-        await expect(page.getByText('Crime and punishment')).not.toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Clean Code', exact: true })).toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Refactoring, edition 2', exact: true })).toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Refactoring to patterns', exact: true })).toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Crime and punishment', exact: true })).not.toBeVisible()
       })
 
       test('all genres button shows all books', async ({ page }) => {
         await page.getByRole('button', { name: 'books' }).click()
         await page.getByRole('button', { name: 'refactoring' }).click()
-        await expect(page.getByText('Crime and punishment')).not.toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Crime and punishment', exact: true })).not.toBeVisible()
 
         await page.getByRole('button', { name: 'all genres' }).click()
-        await expect(page.getByText('Crime and punishment')).toBeVisible()
-        await expect(page.getByText('Clean Code')).toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Crime and punishment', exact: true })).toBeVisible()
+        await expect(page.getByRole('cell', { name: 'Clean Code', exact: true })).toBeVisible()
       })
     })
 
@@ -155,8 +157,8 @@ describe('Library app', () => {
       ).toBeVisible()
       await expect(page.getByText('books in your favorite genre')).toBeVisible()
       await expect(page.getByText('refactoring', { exact: true })).toBeVisible()
-      await expect(page.getByText('Clean Code')).toBeVisible()
-      await expect(page.getByText('Crime and punishment')).not.toBeVisible()
+      await expect(page.getByRole('cell', { name: 'Clean Code', exact: true })).toBeVisible()
+      await expect(page.getByRole('cell', { name: 'Crime and punishment', exact: true })).not.toBeVisible()
     })
 
     test('new book appears in genre filtered view', async ({ page }) => {
@@ -170,8 +172,8 @@ describe('Library app', () => {
       await page.getByRole('button', { name: 'books' }).click()
       await page.getByRole('button', { name: 'classic' }).click()
 
-      await expect(page.getByText('Classic Test Book')).toBeVisible()
-      await expect(page.getByText('Crime and punishment')).toBeVisible()
+      await expect(page.getByRole('cell', { name: 'Classic Test Book', exact: true })).toBeVisible()
+      await expect(page.getByRole('cell', { name: 'Crime and punishment', exact: true })).toBeVisible()
     })
   })
 })
