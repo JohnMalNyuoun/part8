@@ -1,18 +1,16 @@
 import { useState } from 'react'
-import { useApolloClient, useQuery } from '@apollo/client/react'
-import { ALL_BOOKS } from './queries'
+import { useApolloClient } from '@apollo/client/react'
 
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
+import Recommend from './components/Recommend'
 import LoginForm from './components/LoginForm'
 
 const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(() => localStorage.getItem('library-user-token'))
-  
   const client = useApolloClient()
-  const booksResult = useQuery(ALL_BOOKS)
 
   const logout = () => {
     setToken(null)
@@ -30,6 +28,7 @@ const App = () => {
         {token ? (
           <>
             <button onClick={() => setPage('add')}>add book</button>
+            <button onClick={() => setPage('recommend')}>recommend</button>
             <button onClick={logout}>logout</button>
           </>
         ) : (
@@ -38,14 +37,9 @@ const App = () => {
       </div>
 
       <Authors show={page === 'authors'} token={token} />
-      
-      <Books 
-        show={page === 'books'} 
-        books={booksResult.data ? booksResult.data.allBooks : []} 
-      />
-      
+      <Books show={page === 'books'} />
       <NewBook show={page === 'add'} />
-      
+      <Recommend show={page === 'recommend'} />
       <LoginForm
         show={page === 'login'}
         setToken={setToken}
