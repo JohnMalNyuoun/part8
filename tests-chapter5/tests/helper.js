@@ -42,7 +42,12 @@ const gql = async (request, query, variables, token) => {
     data: { query, variables },
     headers,
   })
-  return response.json()
+
+  const json = await response.json()
+  if (json.errors) {
+    throw new Error(`GraphQL Error in test seed: ${JSON.stringify(json.errors, null, 2)}`)
+  }
+  return json
 }
 
 const seedDatabase = async (request) => {
@@ -63,7 +68,11 @@ const seedDatabase = async (request) => {
     }`,
     { username: TEST_USER.username, password: TEST_PASSWORD },
   )
-  const token = loginResult.data.login.value
+  const token = loginResult.data?.login?.value
+
+  if (!token) {
+    throw new Error('Failed to obtain JWT token during seedDatabase')
+  }
 
   for (const book of initialBooks) {
     await gql(
@@ -76,7 +85,6 @@ const seedDatabase = async (request) => {
     )
   }
 
-  // Set birth years for known authors
   const authorBirthYears = [
     { name: 'Robert Martin', setBornTo: 1952 },
     { name: 'Martin Fowler', setBornTo: 1963 },
@@ -95,9 +103,14 @@ const seedDatabase = async (request) => {
 }
 
 const loginWith = async (page, username, password) => {
-  await page.getByRole('button', { name: 'login' }).first().click()
+  const formVisible = await page.locator('form').isVisible()
+  if (!formVisible) {
+    await page.getByRole('button', { name: 'login' }).click()
+  }
+
   await page.getByLabel('username').fill(username)
   await page.getByLabel('password').fill(password)
+
   await page.locator('form').getByRole('button', { name: 'login' }).click()
 }
 

@@ -5,21 +5,23 @@ import { ALL_BOOKS } from '../queries'
 const Books = (props) => {
   const [selectedGenre, setSelectedGenre] = useState('all genres')
 
-
-  const { loading, data, refetch } = useQuery(ALL_BOOKS, {
+  // Skip queries if the view isn't active
+  const { loading, data } = useQuery(ALL_BOOKS, {
     variables: { genre: selectedGenre === 'all genres' ? null : selectedGenre },
-    fetchPolicy: 'network-only', 
+    skip: !props.show,
   })
 
   const allBooksResult = useQuery(ALL_BOOKS, {
     variables: { genre: null },
-    fetchPolicy: 'network-only',
+    skip: !props.show,
   })
 
+  // 1. Check visibility BEFORE loading checks!
   if (!props.show) {
     return null
   }
 
+  // 2. Handle loading state only when this page is visible
   if (loading || allBooksResult.loading) {
     return <div>loading...</div>
   }
@@ -28,13 +30,8 @@ const Books = (props) => {
   const allBooks = allBooksResult.data ? allBooksResult.data.allBooks : []
 
   const genres = Array.from(
-    new Set(allBooks.flatMap((book) => book.genres))
+    new Set(allBooks.flatMap((book) => book.genres || []))
   )
-
-  const handleGenreChange = (genre) => {
-    setSelectedGenre(genre)
-    refetch({ genre: genre === 'all genres' ? null : genre })
-  }
 
   return (
     <div>
@@ -56,7 +53,7 @@ const Books = (props) => {
           {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author.name || a.author}</td>
+              <td>{typeof a.author === 'object' ? a.author.name : a.author}</td>
               <td>{a.published}</td>
             </tr>
           ))}
@@ -65,11 +62,11 @@ const Books = (props) => {
 
       <div style={{ marginTop: '10px' }}>
         {genres.map((g) => (
-          <button key={g} onClick={() => handleGenreChange(g)}>
+          <button key={g} onClick={() => setSelectedGenre(g)}>
             {g}
           </button>
         ))}
-        <button onClick={() => handleGenreChange('all genres')}>
+        <button onClick={() => setSelectedGenre('all genres')}>
           all genres
         </button>
       </div>

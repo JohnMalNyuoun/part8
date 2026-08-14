@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useApolloClient } from '@apollo/client/react'
-
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
@@ -8,20 +7,21 @@ import Recommend from './components/Recommend'
 import LoginForm from './components/LoginForm'
 
 const App = () => {
+  // Default view MUST be 'authors'
   const [page, setPage] = useState('authors')
-  const [token, setToken] = useState(() => localStorage.getItem('library-user-token'))
+  const [token, setToken] = useState(localStorage.getItem('library-user-token'))
   const client = useApolloClient()
 
   const logout = () => {
     setToken(null)
-    localStorage.clear()
+    localStorage.removeItem('library-user-token')
     client.resetStore()
     setPage('authors')
   }
 
   return (
     <div>
-      <div>
+      <nav>
         <button onClick={() => setPage('authors')}>authors</button>
         <button onClick={() => setPage('books')}>books</button>
 
@@ -34,11 +34,11 @@ const App = () => {
         ) : (
           <button onClick={() => setPage('login')}>login</button>
         )}
-      </div>
+      </nav>
 
       <Authors show={page === 'authors'} token={token} />
       <Books show={page === 'books'} />
-      <NewBook show={page === 'add'} />
+      <NewBook show={page === 'add'} setPage={setPage} />
       <Recommend show={page === 'recommend'} />
       <LoginForm
         show={page === 'login'}

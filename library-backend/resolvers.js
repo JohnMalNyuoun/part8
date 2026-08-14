@@ -4,7 +4,7 @@ const Book = require('./models/book')
 const Author = require('./models/author')
 const User = require('./models/user')
 
-// Unified Secret Key
+
 const SECRET = process.env.JWT_SECRET || process.env.SECRET || 'secret'
 
 const resolvers = {
@@ -27,7 +27,7 @@ const resolvers = {
         return {
           name: a.name,
           born: a.born,
-          id: a._id,
+          id: a._id.toString(),
           bookCount: count,
         }
       })
@@ -117,7 +117,7 @@ const resolvers = {
 
       const userForToken = {
         username: user.username,
-        id: user._id,
+        id: user._id.toString(), 
       }
 
       return { value: jwt.sign(userForToken, SECRET) }

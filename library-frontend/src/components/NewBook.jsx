@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation } from '@apollo/client/react'
 import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS } from '../queries'
 
-const NewBook = ({ show }) => {
+const NewBook = ({ show, setPage }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [published, setPublished] = useState('')
@@ -10,11 +10,10 @@ const NewBook = ({ show }) => {
   const [genres, setGenres] = useState([])
 
   const [createBook] = useMutation(ADD_BOOK, {
-    
     refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
     onError: (error) => {
       console.error('Error adding book:', error)
-    }
+    },
   })
 
   if (!show) {
@@ -29,13 +28,13 @@ const NewBook = ({ show }) => {
       updatedGenres = updatedGenres.concat(genre.trim())
     }
 
-    createBook({
+    await createBook({
       variables: {
         title,
         author,
         published: parseInt(published, 10),
-        genres: updatedGenres
-      }
+        genres: updatedGenres,
+      },
     })
 
     setTitle('')
@@ -43,6 +42,11 @@ const NewBook = ({ show }) => {
     setAuthor('')
     setGenres([])
     setGenre('')
+
+    // Redirect to books page if setPage prop is passed from App.jsx
+    if (setPage) {
+      setPage('books')
+    }
   }
 
   const addGenre = () => {
@@ -57,29 +61,34 @@ const NewBook = ({ show }) => {
       <h2>add book</h2>
       <form onSubmit={submit}>
         <div>
-          title{' '}
+          <label htmlFor="title">title</label>{' '}
           <input
+            id="title"
             value={title}
             onChange={({ target }) => setTitle(target.value)}
           />
         </div>
         <div>
-          author{' '}
+          <label htmlFor="author">author</label>{' '}
           <input
+            id="author"
             value={author}
             onChange={({ target }) => setAuthor(target.value)}
           />
         </div>
         <div>
-          published{' '}
+          <label htmlFor="published">published</label>{' '}
           <input
+            id="published"
             type="number"
             value={published}
             onChange={({ target }) => setPublished(target.value)}
           />
         </div>
         <div>
+          <label htmlFor="genre">genre</label>{' '}
           <input
+            id="genre"
             value={genre}
             onChange={({ target }) => setGenre(target.value)}
           />

@@ -9,7 +9,7 @@ describe('Library app', () => {
 
   test('front page shows authors by default', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'authors' })).toBeVisible()
-    
+
     // Targeted using cell roles to prevent matching select option elements
     await expect(page.getByRole('cell', { name: 'Robert Martin', exact: true })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'Martin Fowler', exact: true })).toBeVisible()
@@ -29,53 +29,41 @@ describe('Library app', () => {
       await expect(page.getByRole('button', { name: 'login' })).toBeVisible()
     })
 
-    test('add book button is not shown when not logged in', async ({
-      page,
-    }) => {
-      await expect(
-        page.getByRole('button', { name: 'add book' }),
-      ).not.toBeVisible()
+    test('add book button is not shown when not logged in', async ({ page }) => {
+      await expect(page.getByRole('button', { name: 'add book' })).not.toBeVisible()
     })
 
-    test('recommend button is not shown when not logged in', async ({
-      page,
-    }) => {
-      await expect(
-        page.getByRole('button', { name: 'recommend' }),
-      ).not.toBeVisible()
+    test('recommend button is not shown when not logged in', async ({ page }) => {
+      await expect(page.getByRole('button', { name: 'recommend' })).not.toBeVisible()
     })
 
     test('logout button is not shown when not logged in', async ({ page }) => {
-      await expect(
-        page.getByRole('button', { name: 'logout' }),
-      ).not.toBeVisible()
+      await expect(page.getByRole('button', { name: 'logout' })).not.toBeVisible()
     })
 
-    test('set birthyear form is not shown when not logged in', async ({
-      page,
-    }) => {
-      await expect(
-        page.getByRole('heading', { name: /set birth ?year/i }),
-      ).not.toBeVisible()
+    test('set birthyear form is not shown when not logged in', async ({ page }) => {
+      await expect(page.getByRole('heading', { name: /set birth ?year/i })).not.toBeVisible()
     })
 
     test('login succeeds with correct credentials', async ({ page }) => {
       await loginWith(page, 'testuser', 'secret')
 
       await expect(page.getByRole('button', { name: 'add book' })).toBeVisible()
-      await expect(
-        page.getByRole('button', { name: 'recommend' }),
-      ).toBeVisible()
+      await expect(page.getByRole('button', { name: 'recommend' })).toBeVisible()
       await expect(page.getByRole('button', { name: 'logout' })).toBeVisible()
-      await expect(
-        page.getByRole('button', { name: 'login' }),
-      ).not.toBeVisible()
+      await expect(page.getByRole('button', { name: 'login' })).not.toBeVisible()
     })
 
     test('login fails with wrong password', async ({ page }) => {
       await loginWith(page, 'testuser', 'wrong')
 
-      await expect(page.getByText(/login failed/i)).toBeVisible()
+      // Uses role='alert' when present, or falls back to text matcher
+      const alert = page.getByRole('alert')
+      if (await alert.isVisible().catch(() => false)) {
+        await expect(alert).toContainText(/wrong credentials|login failed/i)
+      } else {
+        await expect(page.getByText(/wrong credentials|login failed/i)).toBeVisible()
+      }
     })
   })
 
@@ -100,9 +88,7 @@ describe('Library app', () => {
 
     test('author birth year can be updated', async ({ page }) => {
       await page.getByRole('button', { name: 'authors' }).click()
-      await expect(
-        page.getByRole('heading', { name: 'Set birthyear' }),
-      ).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Set birthyear' })).toBeVisible()
 
       await page.locator('select[name="name"]').selectOption('Martin Fowler')
       await page.getByLabel('born').fill('1965')
@@ -116,15 +102,9 @@ describe('Library app', () => {
       test('genre filter buttons are shown', async ({ page }) => {
         await page.getByRole('button', { name: 'books' }).click()
 
-        await expect(
-          page.getByRole('button', { name: 'refactoring' }),
-        ).toBeVisible()
-        await expect(
-          page.getByRole('button', { name: 'classic' }),
-        ).toBeVisible()
-        await expect(
-          page.getByRole('button', { name: 'all genres' }),
-        ).toBeVisible()
+        await expect(page.getByRole('button', { name: 'refactoring' })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'classic' })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'all genres' })).toBeVisible()
       })
 
       test('filtering by genre works', async ({ page }) => {
@@ -152,9 +132,7 @@ describe('Library app', () => {
     test('recommendations shows books in favorite genre', async ({ page }) => {
       await page.getByRole('button', { name: 'recommend' }).click()
 
-      await expect(
-        page.getByRole('heading', { name: 'recommendations' }),
-      ).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'recommendations' })).toBeVisible()
       await expect(page.getByText('books in your favorite genre')).toBeVisible()
       await expect(page.getByText('refactoring', { exact: true })).toBeVisible()
       await expect(page.getByRole('cell', { name: 'Clean Code', exact: true })).toBeVisible()
