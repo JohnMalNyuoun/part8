@@ -1,30 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@apollo/client/react'
 import { ALL_BOOKS } from '../queries'
 
 const Books = (props) => {
   const [selectedGenre, setSelectedGenre] = useState('all genres')
-  const result = useQuery(ALL_BOOKS)
+
+  // Fetch books filtered by the selected genre on the server
+  const { loading, data, refetch } = useQuery(ALL_BOOKS, {
+    variables: { genre: selectedGenre === 'all genres' ? null : selectedGenre },
+  })
+
+  // We also fetch all books once to extract all unique genre buttons
+  const allBooksResult = useQuery(ALL_BOOKS, {
+    variables: { genre: null }
+  })
 
   if (!props.show) {
     return null
   }
 
-  if (result.loading) {
+  if (loading || allBooksResult.loading) {
     return <div>loading...</div>
   }
 
-  const books = result.data ? result.data.allBooks : []
+  const books = data ? data.allBooks : []
+  const allBooks = allBooksResult.data ? allBooksResult.data.allBooks : []
 
- 
+  // Get unique genres list from all books
   const genres = Array.from(
-    new Set(books.flatMap((book) => book.genres))
+    new Set(allBooks.flatMap((book) => book.genres))
   )
 
-  const booksToShow =
-    selectedGenre === 'all genres'
-      ? books
-      : books.filter((b) => b.genres.includes(selectedGenre))
+  const handleGenreChange = (genre) => {
+    setSelectedGenre(genre)
+    refetch({ genre: genre === 'all genres' ? null : genre })
+  }
 
   return (
     <div>
@@ -43,7 +53,7 @@ const Books = (props) => {
             <th>author</th>
             <th>published</th>
           </tr>
-          {booksToShow.map((a) => (
+          {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name || a.author}</td>
@@ -53,14 +63,14 @@ const Books = (props) => {
         </tbody>
       </table>
 
-      
+      {/* Genre Filter Buttons */}
       <div style={{ marginTop: '10px' }}>
         {genres.map((g) => (
-          <button key={g} onClick={() => setSelectedGenre(g)}>
+          <button key={g} onClick={() => handleGenreChange(g)}>
             {g}
           </button>
         ))}
-        <button onClick={() => setSelectedGenre('all genres')}>
+        <button onClick={() => handleGenreChange('all genres')}>
           all genres
         </button>
       </div>
