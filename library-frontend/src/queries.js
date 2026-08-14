@@ -53,7 +53,6 @@ export const ALL_DATA = gql`
   }
 `
 
-// --- MUTATIONS ---
 
 export const ADD_BOOK = gql`
   mutation createBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) {
@@ -93,3 +92,4 @@ export const LOGIN = gql`
     }
   }
 `
+
