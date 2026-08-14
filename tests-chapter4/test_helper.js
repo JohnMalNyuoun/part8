@@ -66,10 +66,22 @@ const teardownDatabase = async () => {
   }
 }
 
+const createTestUser = async (
+  username = 'testuser',
+  favoriteGenre = 'refactoring',
+) => {
+  const user = new User({ username, favoriteGenre })
+  await user.save()
+  return user
+}
+
 const seedDatabase = async () => {
   await Author.deleteMany({})
   await Book.deleteMany({})
   await User.deleteMany({})
+
+
+  await createTestUser('testuser', 'refactoring')
 
   const authorDocs = {}
   for (const authorData of initialAuthors) {
@@ -94,15 +106,6 @@ const seedDatabase = async () => {
     })
     await book.save()
   }
-}
-
-const createTestUser = async (
-  username = 'testuser',
-  favoriteGenre = 'refactoring',
-) => {
-  const user = new User({ username, favoriteGenre })
-  await user.save()
-  return user
 }
 
 const createServer = () => {

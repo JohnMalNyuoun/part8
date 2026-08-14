@@ -4,7 +4,8 @@ const Book = require('./models/book')
 const Author = require('./models/author')
 const User = require('./models/user')
 
-const SECRET = process.env.SECRET || 'secret'
+// Unified Secret Key
+const SECRET = process.env.JWT_SECRET || process.env.SECRET || 'secret'
 
 const resolvers = {
   Query: {

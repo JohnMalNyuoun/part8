@@ -20,10 +20,10 @@ const Books = (props) => {
             <th>published</th>
           </tr>
           {books.map((a) => (
-            <tr key={a.title}>
+            <tr key={a.id || a.title}>
               <td>{a.title}</td>
-              {/* Access the name property on the author object */}
-              <td>{a.author.name}</td>
+             
+              <td>{a.author?.name || 'Unknown'}</td>
               <td>{a.published}</td>
             </tr>
           ))}

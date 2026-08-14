@@ -1,21 +1,30 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation } from '@apollo/client/react'
 import { ALL_AUTHORS, EDIT_BIRTH_YEAR } from '../queries'
 
-const Authors = (props) => {
+const Authors = ({ show, token }) => {
   const [name, setName] = useState('')
   const [born, setBorn] = useState('')
 
   const result = useQuery(ALL_AUTHORS)
 
-  const [ changeBorn ] = useMutation(EDIT_BIRTH_YEAR, {
-    refetchQueries: [ { query: ALL_AUTHORS } ],
+  const [changeBorn] = useMutation(EDIT_BIRTH_YEAR, {
+    refetchQueries: [{ query: ALL_AUTHORS }],
     onError: (error) => {
-      console.error(error.graphQLErrors[0]?.message || 'Error updating birth year')
+      console.error('Error updating birthyear:', error)
     }
   })
 
-  if (!props.show) {
+  const authors = result.data ? result.data.allAuthors : []
+
+  // Automatically select the first author once data loads
+  useEffect(() => {
+    if (authors.length > 0 && !name) {
+      setName(authors[0].name)
+    }
+  }, [authors, name])
+
+  if (!show) {
     return null
   }
 
@@ -23,26 +32,21 @@ const Authors = (props) => {
     return <div>loading...</div>
   }
 
-  if (result.error) {
-    return <div>Error loading data: {result.error.message}</div>
-  }
-
-  const authors = result.data.allAuthors
-
-
-  const selectedName = name || (authors.length > 0 ? authors[0].name : '')
-
   const submit = async (event) => {
     event.preventDefault()
 
+    if (!name || !born) {
+      console.warn('Please select an author and enter a birth year.')
+      return
+    }
+
     changeBorn({
       variables: {
-        name: selectedName,
+        name,
         setBornTo: parseInt(born, 10)
       }
     })
 
-    setName('')
     setBorn('')
   }
 
@@ -59,34 +63,40 @@ const Authors = (props) => {
           {authors.map((a) => (
             <tr key={a.name}>
               <td>{a.name}</td>
-              <td>{a.born}</td>
+              <td>{a.born || ''}</td>
               <td>{a.bookCount}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h3>Set birthyear</h3>
-      <form onSubmit={submit}>
+      {/* Only show edit form if user is logged in */}
+      {token && (
         <div>
-          <select value={selectedName} onChange={({ target }) => setName(target.value)}>
-            {authors.map((a) => (
-              <option key={a.id || a.name} value={a.name}>
-                {a.name}
-              </option>
-            ))}
-          </select>
+          <h3>Set birthyear</h3>
+          <form onSubmit={submit}>
+            <div>
+              name
+              <select value={name} onChange={({ target }) => setName(target.value)}>
+                {authors.map((a) => (
+                  <option key={a.id || a.name} value={a.name}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              born
+              <input
+                type="number"
+                value={born}
+                onChange={({ target }) => setBorn(target.value)}
+              />
+            </div>
+            <button type="submit">update author</button>
+          </form>
         </div>
-        <div>
-          born
-          <input
-            type="number"
-            value={born}
-            onChange={({ target }) => setBorn(target.value)}
-          />
-        </div>
-        <button type="submit">update author</button>
-      </form>
+      )}
     </div>
   )
 }

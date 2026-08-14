@@ -53,6 +53,8 @@ export const ALL_DATA = gql`
   }
 `
 
+// --- MUTATIONS ---
+
 export const ADD_BOOK = gql`
   mutation createBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) {
     addBook(
@@ -80,6 +82,14 @@ export const EDIT_BIRTH_YEAR = gql`
       name
       born
       id
+    }
+  }
+`
+
+export const LOGIN = gql`
+  mutation login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
     }
   }
 `
