@@ -1,9 +1,10 @@
 name: Test library-backend
 
 on:
-  # push:
-  #   branches: [ main, master ]
+  push:
+    branches: [main, master]
   workflow_dispatch:
+
 
 jobs:
   test:
