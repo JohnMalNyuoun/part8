@@ -20,6 +20,7 @@ jobs:
           - '42088931e59cb835f6fd9b855a86a3be6b4ab261' # Commit 6
           - '59257d774540370027b24d238d68c29416c79987' # Commit 7
           - 'c89c381a0be99332b2c42ef0d005d822b508b3ca' # Commit 8
+          - '5589a9f2c51e4f9928661d1c51f5a3c8610b9783' # Commit 9
 
     steps:
       # Check out the specific commit from the matrix
