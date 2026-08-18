@@ -1,29 +1,39 @@
-name: Test library-backend
+name: Test library-backend across 8 commits
 
 on:
-  push:
-    branches: [main, master]
-    # 1. Trigger on git tags matching release patterns (e.g., v1.0.0, release-1)
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
-      - 'release-*'
   workflow_dispatch:
 
 jobs:
-  test:
-    # 2. Only run if it's a tag push OR if the commit message contains '[run-tests]'
-    if: startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[run-tests]')
+  test-commit-matrix:
     runs-on: ubuntu-latest
+    strategy:
+      # Prevents one failing commit from stopping tests on the remaining commits
+      fail-fast: false
+      matrix:
+        # Replace these with your 8 specific commit SHAs (or relative references like HEAD, HEAD~1, etc.)
+        commit_sha:
+          - 'ad6d47539e8443ac2dbb9b99ec86bf9db6a16a73' # Commit 1
+          - 'c0a1cb334916ffbb10bc84362e8ac33fa18c90a3' # Commit 2
+          - '8a49668eeaa84e4efcfa85bf62a364ffc2d76c57' # Commit 3
+          - '2ea263f79383fd454a0ca83739fd0774da4d698a' # Commit 4
+          - 'bbb6076e91fe09005a795deffc72f8ef08dec550' # Commit 5
+          - '42088931e59cb835f6fd9b855a86a3be6b4ab261' # Commit 6
+          - '59257d774540370027b24d238d68c29416c79987' # Commit 7
+          - 'c89c381a0be99332b2c42ef0d005d822b508b3ca' # Commit 8
 
     steps:
-      - uses: actions/checkout@v6
+      # Check out the specific commit from the matrix
+      - name: Checkout target commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.commit_sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
 
-      - name: Install library-backend dependencies
+      - name: Install backend dependencies
         working-directory: library-backend
         run: npm ci
 
