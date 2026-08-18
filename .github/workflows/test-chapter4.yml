@@ -3,11 +3,16 @@ name: Test library-backend
 on:
   push:
     branches: [main, master]
+    # 1. Trigger on git tags matching release patterns (e.g., v1.0.0, release-1)
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'release-*'
   workflow_dispatch:
-
 
 jobs:
   test:
+    # 2. Only run if it's a tag push OR if the commit message contains '[run-tests]'
+    if: startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[run-tests]')
     runs-on: ubuntu-latest
 
     steps:
